@@ -1,0 +1,23 @@
+{
+  "name": "fenbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "discord.js": "^12.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fenteale/FenBot.git"
+  },
+  "author": "Fenteale",
+  "license": "SEE LICENCE IN https://github.com/Fenteale/FenBot/blob/main/LICENSE",
+  "bugs": {
+    "url": "https://github.com/Fenteale/FenBot/issues"
+  },
+  "homepage": "https://github.com/Fenteale/FenBot#readme"
+}
