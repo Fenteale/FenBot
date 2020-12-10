@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client({partials: ['REACTION', 'USER', 'GUILD_MEMBER']});
 const path = require('path');
 var fs = require('fs');
+var http = require('http');
 
 var god = fs.readFileSync(path.join(__dirname, "admin.txt"), {encoding:'utf8', flag:'r'} ).trim()
 
@@ -87,12 +88,35 @@ client.on('message', msg => {
 				case 'printPoll':
 					msg.channel.send(pollMsgs);
 					break;
+				case 'getIp':
+					if(msg.author.id != god) {
+						msg.channel.send('You are not a fennec fox.');
+						break;
+					}
+					var data = '';
+					var request = http.request({host: 'ifconfig.me', path: '/'}, function (res) {
+						res.on('data', function (chunk) {
+							data += chunk;
+						});
+						res.on('end', function () {
+							console.log(data);
+							msg.channel.send('Ip is: ' + data);
+						});
+					});
+					request.on('error', function (e) {
+						console.log(e.message);
+					});
+					request.end();
+					
+					break;
 				default:
 					msg.channel.send('Unrecognized command.');
 					break;
 			}
 		}
 	}
+	else if(msgParts[0] === ':funnyman:')
+		msg.channel.send(':funnyman:');
 });
 
 client.on('messageReactionAdd', async (rct, usr) => {
@@ -116,7 +140,7 @@ client.on('messageReactionAdd', async (rct, usr) => {
 });
 
 client.on('messageReactionRemove', async (rct, usr) => {
-	if(usr.partial) await usr.fetch(); //crashing here.  Why???
+	if(usr.partial) await usr.fetch();
 	if(pollMsgs.includes(rct.message))
 	{
 		if(rct.emoji.name = 'fox') {
