@@ -3,14 +3,18 @@ const client = new Discord.Client({partials: ['REACTION', 'USER', 'GUILD_MEMBER'
 const path = require('path');
 var fs = require('fs');
 var http = require('http');
+var re = require('./reSheet');
 
 var god = fs.readFileSync(path.join(__dirname, "admin.txt"), {encoding:'utf8', flag:'r'} ).trim()
 
 var pollMsgs = [];
 
-var foxRole = [];
+var tRole = [];
+var fRole = [];
+var mRole = [];
+var gAuth;
 
-client.on('ready', () => {	
+client.on('ready', async () => {	
 	var pollMsgsStr = [];
 	if(fs.existsSync(path.join(__dirname, 'messageCache.txt'))) {
 		const mCache = fs.readFileSync(path.join(__dirname, 'messageCache.txt'), 'UTF-8');
@@ -26,8 +30,16 @@ client.on('ready', () => {
 		console.log(g.name)
 		g.roles.fetch().then(r => {
 			r.cache.forEach(rr => {
-			if(rr.name == 'Fox')
-				foxRole[g] = rr;
+				switch(rr.name){
+					case 'They/Them/Their':
+						tRole[g] = rr;
+						break;
+					case 'He/Him/His':
+						mRole[g] = rr;
+						break;
+					case 'She/Her':
+						fRole[g] = rr;
+				}
 			});
 		});
 		pollMsgsStr.forEach(p => {
@@ -38,9 +50,12 @@ client.on('ready', () => {
 	});
 	console.log(pollMsgs);
 	console.log('Logged in as ' + client.user.tag + '!');
+
+	gAuth = await re.getAuthToken();
+	if(gAuth) console.log('Signed into google API.');
 });
 
-client.on('message', msg => {
+client.on('message', async (msg) => {
 	var msgParts = msg.content.split(" ");
 	if(msgParts[0] === '.fennec') {
 		if(msgParts.length >= 2)
@@ -53,6 +68,9 @@ client.on('message', msg => {
 					msg.channel.send('FOX' + msg.author.id);
 					msg.react('🦊');
 					//msg.channel.send(msg.author);
+					break;
+				case 'source':
+					msg.channel.send('https://github.com/Fenteale/FenBot');
 					break;
 				case 'listChannels':
 					msg.channel.startTyping();
@@ -79,7 +97,10 @@ client.on('message', msg => {
 							if(c.name == msgParts[2])
 								cToSend = c;
 					});
-					cToSend.send('Test').then(s => {
+					cToSend.send('React to this message to add the pronoun roll to your user.  Unreact to remove.\n :gun: : @They/Them/Their, :knife: : @He/Him/His :crossed_swords: : @She/Her').then(s => {
+						s.react(':gun:');
+						s.react(':knife:');
+						s.react(':crossed_swords:');
 						pollMsgs.push(s);
 						fs.writeFileSync(path.join(__dirname, "messageCache.txt"), s.id + ' ' + msg.channel.id + '\n', {flag:'a+'})
 					});
@@ -109,6 +130,15 @@ client.on('message', msg => {
 					request.end();
 					
 					break;
+				case 'spreadsheetTest':
+					if(msg.author.id != god) {
+						msg.channel.send('You are not a fennec fox.');
+						break;
+					}
+					const response = await re.getSpreadSheetValues({spreadsheetId: '1mRTiCerVY85vG6w2vWQ3wdUN5LJYB4xpzE6_O6khUJI', auth: gAuth, sheetName: 'Sheet1'});
+					msg.channel.send('output for getSpreadSheet ```\n' + JSON.stringify(response.data, null, 2) + '```');
+					console.log('output for getSpreadSheet ', JSON.stringify(response.data, null, 2));
+					break;
 				default:
 					msg.channel.send('Unrecognized command.');
 					break;
@@ -123,11 +153,21 @@ client.on('messageReactionAdd', async (rct, usr) => {
 	if(usr.partial) await usr.fetch();
 	if(pollMsgs.includes(rct.message))
 	{
-		if(rct.emoji.name = 'fox') {
-			const u = rct.message.guild.members.resolve(usr);
-			if(u) {
-				u.roles.add(foxRole[rct.message.guild]);
-				console.log("Added role Fox to " + u.user.username);
+		const u = rct.message.guild.members.resolve(usr);
+		if(u) {
+			switch(rct.emoji.name) {
+				case 'gun':
+					u.roles.add(tRole[rct.message.guild]);
+					console.log("Added role They/Them to " + u.user.username);
+					break;
+				case 'knife':
+					u.roles.add(mRole[rct.message.guild]);
+					console.log("Added role He/Him to " + u.user.username);
+					break;
+				case 'crossed_swords':
+					u.roles.add(fRole[rct.message.guild]);
+					console.log("Added role She/Her to " + u.user.username);
+					break;
 			}
 		}
 	}
