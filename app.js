@@ -145,7 +145,7 @@ client.on('message', async (msg) => {
 			}
 		}
 	}
-	else if(msgParts[0] === ':funnyman:')
+	else if((msgParts[0] === ':funnyman:') && (msg.author != client.user) )
 		msg.channel.send(':funnyman:');
 });
 
