@@ -156,18 +156,20 @@ client.on('messageReactionAdd', async (rct, usr) => {
 		const u = rct.message.guild.members.resolve(usr);
 		if(u) {
 			switch(rct.emoji.name) {
-				case 'gun':
+				case '🔫':
 					u.roles.add(tRole[rct.message.guild]);
 					console.log("Added role They/Them to " + u.user.username);
 					break;
-				case 'knife':
+				case '🔪':
 					u.roles.add(mRole[rct.message.guild]);
 					console.log("Added role He/Him to " + u.user.username);
 					break;
-				case 'crossed_swords':
+				case '⚔️':
 					u.roles.add(fRole[rct.message.guild]);
 					console.log("Added role She/Her to " + u.user.username);
 					break;
+				default:
+					console.log('WTF ', rct.emoji.name);
 			}
 		}
 	}
@@ -183,11 +185,21 @@ client.on('messageReactionRemove', async (rct, usr) => {
 	if(usr.partial) await usr.fetch();
 	if(pollMsgs.includes(rct.message))
 	{
-		if(rct.emoji.name = 'fox') {
-			var u = rct.message.guild.members.resolve(usr);
-			if(u) {
-				u.roles.remove(foxRole[rct.message.guild]);
-				console.log("Removed role Fox from " + u.user.username);
+		const u = rct.message.guild.members.resolve(usr);
+		if(u) {
+			switch(rct.emoji.name) {
+				case '🔫':
+					u.roles.remove(tRole[rct.message.guild]);
+					console.log("Removed role They/Them to " + u.user.username);
+					break;
+				case '🔪':
+					u.roles.remove(mRole[rct.message.guild]);
+					console.log("Removed role He/Him to " + u.user.username);
+					break;
+				case '⚔️':
+					u.roles.remove(fRole[rct.message.guild]);
+					console.log("Removed role She/Her to " + u.user.username);
+					break;
 			}
 		}
 	}
