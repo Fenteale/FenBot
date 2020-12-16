@@ -145,8 +145,9 @@ client.on('message', async (msg) => {
 			}
 		}
 	}
-	else if((msgParts[0] === ':funnyman:') && (msg.author != client.user) )
-		msg.channel.send(':funnyman:');
+	else if((msgParts[0] === '<:funnyman:783147621093998613>') && (msg.author != client.user) )
+		msg.channel.send('<:funnyman:783147621093998613>');
+		
 });
 
 client.on('messageReactionAdd', async (rct, usr) => {
