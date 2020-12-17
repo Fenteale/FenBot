@@ -9,7 +9,7 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 //set GCLOUD_PROJECT to be the id of the google project
 var sheets;
 
-async function getAuthToken() {
+module.exports.getAuthToken = async () => {
 	if(!sheets) sheets = google.sheets('v4');
 	const auth = new gal.GoogleAuth({
 		scopes: SCOPES
@@ -34,10 +34,20 @@ async function getSpreadSheetValues({spreadsheetId, auth, sheetName}) {
 	});
 	return res;
 }
-  
-  
-module.exports = {
-	getAuthToken,
-	getSpreadSheet,
-	getSpreadSheetValues
+
+module.exports.run = async (client, msg, args) => {
+	if(msg.author.id != client.god) {
+		msg.channel.send('You are not a fennec fox.');
+		return;
+	}
+	const response = await getSpreadSheetValues({spreadsheetId: '1mRTiCerVY85vG6w2vWQ3wdUN5LJYB4xpzE6_O6khUJI', auth: client.gAuth, sheetName: 'Sheet1'});
+	msg.channel.send('output for getSpreadSheet ```\n' + JSON.stringify(response.data, null, 2) + '```');
+	console.log('output for getSpreadSheet ', JSON.stringify(response.data, null, 2));
+	console.log(response.data.values[0][0]);
 }
+
+module.exports.help = {
+	name: 're',
+	usage: 're <test>',
+	info: 'Commands to interact with the RE Progress Google Sheet.'
+};
