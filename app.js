@@ -1,3 +1,7 @@
+//Fenbot entry source: app.js
+//Huge thanks to Bryson and his bot https://github.com/brysondev/brysonBot2.0
+//for letting me borrow some code
+
 const Discord = require('discord.js');
 const client = new Discord.Client({partials: ['REACTION', 'USER', 'GUILD_MEMBER']});
 const path = require('path');
@@ -50,7 +54,7 @@ client.on('ready', async () => {
 		g.roles.fetch().then(r => {
 			r.cache.forEach(rr => {
 				switch(rr.name){
-					case 'Fox':
+					case 'They/Them/Their':
 						tRole[g] = rr;
 						break;
 					case 'He/Him/His':
@@ -94,7 +98,6 @@ client.on('messageReactionAdd', async (rct, usr) => {
 	{
 		const u = rct.message.guild.members.resolve(usr);
 		if(u && usr != client.user) {
-			console.log('We in there.');
 			switch(rct.emoji.name) {
 				case '🔫':
 					u.roles.add(tRole[rct.message.guild]);
@@ -112,8 +115,6 @@ client.on('messageReactionAdd', async (rct, usr) => {
 					console.log('WTF ', rct.emoji.name);
 			}
 		}
-		else
-			console.log('Hmmmb...', rct.me);
 	}
 });
 
