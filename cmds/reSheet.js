@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const {google} = require('googleapis');
 const gal = require('google-auth-library');
 const readline = require('readline');
@@ -8,6 +9,8 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 //set GOOGLE_APPLICATION_CREDENTIALS to equal path to service account credentials
 //set GCLOUD_PROJECT to be the id of the google project
 var sheets;
+var googleAuth;
+var sid = fs.readFileSync(path.join(__dirname, "..", "respreadsheet.txt"), {encoding:'utf8', flag:'r'} ).trim();
 
 module.exports.getAuthToken = async () => {
 	if(!sheets) sheets = google.sheets('v4');
@@ -15,6 +18,7 @@ module.exports.getAuthToken = async () => {
 		scopes: SCOPES
 	});
 	const authToken = await auth.getClient();
+	googleAuth = authToken;
 	return authToken;
 }
 
@@ -27,10 +31,19 @@ async function getSpreadSheet({spreadsheetId, auth}) {
 }
 
 async function getSpreadSheetValues({spreadsheetId, auth, sheetName}) {
+	const s = await getSpreadSheet({spreadsheetId, auth});
+	var sD = s.data.sheets; //.sheets;
+	var found = false;
+	sD.forEach(se => {
+		if(se.properties.title == sheetName)
+			found = true;
+	});
+	if(!found)
+		return undefined;
 	const res = await sheets.spreadsheets.values.get({
 		spreadsheetId,
 		auth,
-		range: sheetName
+		range: sheetName + '!A1:D1000'
 	});
 	return res;
 }
@@ -40,10 +53,58 @@ module.exports.run = async (client, msg, args) => {
 		msg.channel.send('You are not a fennec fox.');
 		return;
 	}
-	const response = await getSpreadSheetValues({spreadsheetId: '1mRTiCerVY85vG6w2vWQ3wdUN5LJYB4xpzE6_O6khUJI', auth: client.gAuth, sheetName: 'Sheet1'});
-	msg.channel.send('output for getSpreadSheet ```\n' + JSON.stringify(response.data, null, 2) + '```');
-	console.log('output for getSpreadSheet ', JSON.stringify(response.data, null, 2));
-	console.log(response.data.values[0][0]);
+	switch (args[0]) {
+		case 'get':
+			console.log('Request for spreadsheet data. ', args[1], ' ', args[2]);
+			if(!args[1] || !args[2]) {
+				msg.channel.send('\"get\" requires two parameters.  First is the sheet name, second is the value.');
+				break;
+			}
+			var rangeToPass = args[1];// + '!A1:D1000';
+			const response = await getSpreadSheetValues({spreadsheetId: sid, auth: client.gAuth, sheetName: rangeToPass});
+			if(response == undefined) {
+				msg.channel.send('Sheet name \"' + args[1] + '\" does not exist.');
+				break;
+			}
+			//msg.channel.send('output for getSpreadSheet ```\n' + JSON.stringify(response.data, null, 2) + '```');
+			//console.log('output for getSpreadSheet ', JSON.stringify(response.data, null, 2));
+			var iOfData = 0;
+			var shouldSkip = false;
+			response.data.values.forEach(v => {
+				if(!shouldSkip) {
+					var vParts = v[0].split('(');
+					if(vParts[0] == args[2])
+						shouldSkip = true;
+					else
+						iOfData ++;
+				}
+			});
+			if(!shouldSkip) {
+				msg.channel.send('Function name \"' + args[2] + '\" not found in \"' + args[1] + '\" sheet.');
+				break;
+			}
+			var msgToSend = '**FUNCTION SIGNATURE**\n';
+			msgToSend += '```cpp\n' + response.data.values[iOfData][0] + '```';
+			if(response.data.values[iOfData][1] != '') {
+				msgToSend += '\n**NOTES**\n';
+				msgToSend += '```\n' + response.data.values[iOfData][1] + '```';
+			}
+			if(response.data.values[iOfData][2] != '') {
+				msgToSend += '\n**ASSOCIATED FILE**\n';
+				msgToSend += '```\n' + response.data.values[iOfData][2] + '```';
+			}
+			msgToSend += '\n**STATUS**\n';
+			msgToSend += '```\n' + response.data.values[iOfData][3] + '```';
+			msg.channel.send(msgToSend);
+			break;
+		case 'set':
+			msg.channel.send('Unimplemented function.');
+			break;
+		default:
+			msg.channel.send('Unknown command for RE sheet.');
+			break;
+	}
+	
 }
 
 module.exports.help = {

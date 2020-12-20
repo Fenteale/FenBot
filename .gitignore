@@ -108,3 +108,6 @@ token.txt
 #admin.txt
 messageCache.txt
 service_account_credentials.json
+
+#maybe not this one, undecided
+respreadsheet.txt

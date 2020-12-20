@@ -16,8 +16,8 @@ module.exports.run = async (client, msg, args) => {
 			if(c.name == args[0])
 				cToSend = c;
 	});
-	//cToSend.send('React to this message to add the pronoun roll to your user.  Unreact to remove.\n :gun: : @They/Them/Their, :knife: : @He/Him/His :crossed_swords: : @She/Her').then(s => {
-	cToSend.send('This is a test poll').then(s => {
+	cToSend.send('React to this message to add the pronoun roll to your user.  Unreact to remove.\n :gun: : @They/Them/Their, :knife: : @He/Him/His :crossed_swords: : @She/Her').then(s => {
+	//cToSend.send('This is a test poll').then(s => {
 		s.react('🔫');
 		s.react('🔪');
 		s.react('⚔️');
