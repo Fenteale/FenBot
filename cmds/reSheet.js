@@ -30,6 +30,14 @@ async function getSpreadSheet({spreadsheetId, auth}) {
 	return res;
 }
 
+async function updateSpreadSheet({spreadsheetId, auth}) {
+	const res = await sheets.spreadsheets.values.update({
+		spreadsheetId,
+		auth,
+	});
+	return res;
+}
+
 async function getSpreadSheetValues({spreadsheetId, auth, sheetName}) {
 	const s = await getSpreadSheet({spreadsheetId, auth});
 	var sD = s.data.sheets; //.sheets;
@@ -98,7 +106,79 @@ module.exports.run = async (client, msg, args) => {
 			msg.channel.send(msgToSend);
 			break;
 		case 'set':
-			msg.channel.send('Unimplemented function.');
+			console.log('Request for writing spreadsheet data from', msg.author.username, args.join(' '));
+			if(!args[1] || !args[2] || !args[3] || !args[4]) {
+				msg.channel.send('\"get\" requires four parameters.  First is the sheet name, second is the value, third is the field to edit, last is the new value.');
+				break;
+			}
+			var rangeToPass = args[1];// + '!A1:D1000';
+			const response2 = await getSpreadSheetValues({spreadsheetId: sid, auth: client.gAuth, sheetName: rangeToPass});
+			if(response2 == undefined) {
+				msg.channel.send('Sheet name \"' + args[1] + '\" does not exist.');
+				break;
+			}
+			args[4] = args.slice(4, args.length).join(' ');
+			var goodP = true;
+			var colLet = '';
+			switch(args[3].toLowerCase()) {
+				case 'notes':
+					colLet='B';
+					break;
+				case 'file':
+					colLet='C';
+					break;
+				case 'status':
+					colLet='D';
+					switch(args[4].toLowerCase()) {
+						case 'needs check':
+						case 'in progress':
+						case 'completed':
+						case 'not started':
+						case 'ignored':
+							args[4] = args[4].toUpperCase();
+							break;
+						default:
+							goodP = false;
+							break;
+					}
+					break;
+				default:
+					goodP = false;
+					break;
+			}
+			if(!goodP)
+			{
+				msg.channel.send('Invalid parameters.');
+				break;
+			}
+
+			var iOfData = 0;
+			var shouldSkip = false;
+			response2.data.values.forEach(v => {
+				if(!shouldSkip) {
+					var vParts = v[0].split('(');
+					if(vParts[0] == args[2])
+						shouldSkip = true;
+					else
+						iOfData ++;
+				}
+			});
+			if(!shouldSkip) {
+				msg.channel.send('Function name \"' + args[2] + '\" not found in \"' + args[1] + '\" sheet.');
+				break;
+			}
+			response2.data.values[iOfData][3] = args[3];
+			var req = {
+				spreadsheetId: sid,
+				range: args[1] + '!'+ colLet + String(iOfData+1),
+				valueInputOption: 'USER_ENTERED',
+				resource: {
+					values: [[args[4]]]
+				},
+				auth: client.gAuth
+			}
+			await sheets.spreadsheets.values.update(req);
+			msg.channel.send('Entry Updated');
 			break;
 		default:
 			msg.channel.send('Unknown command for RE sheet.');
