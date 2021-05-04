@@ -14,7 +14,7 @@ client.pollMsgs = [];
 var tRole = [];
 var fRole = [];
 var mRole = [];
-var gAuth;
+
 var prefix = '.fennec';
 
 client.commands = new Discord.Collection();
@@ -73,8 +73,6 @@ client.on('ready', async () => {
 	});
 	console.log('Logged in as ' + client.user.tag + '!');
 
-	client.gAuth = await client.commands.get('re').getAuthToken();
-	if(client.gAuth) console.log('Signed into google API.');
 });
 
 client.on('message', async (msg) => {
