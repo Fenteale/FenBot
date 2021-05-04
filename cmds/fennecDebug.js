@@ -1,7 +1,7 @@
 module.exports.run = async (client, msg, args) => {
 	switch(args[0]) {
-		case 'small':
-			msg.channel.send('fox');
+		case 'freeman':
+			msg.channel.send('SAVOR OF HUMENS');
 			break;
 		case 'large':
 			msg.channel.send('🦊FOX🦊');

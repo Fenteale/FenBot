@@ -15,7 +15,7 @@ var tRole = [];
 var fRole = [];
 var mRole = [];
 
-var prefix = '.fennec';
+var prefix = '.john';
 
 client.commands = new Discord.Collection();
 client.god = god;
