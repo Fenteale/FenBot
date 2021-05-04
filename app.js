@@ -54,10 +54,10 @@ client.on('ready', async () => {
 		g.roles.fetch().then(r => {
 			r.cache.forEach(rr => {
 				switch(rr.name){
-					case 'They/Them/Their':
+					case 'They/Them':
 						tRole[g] = rr;
 						break;
-					case 'He/Him/His':
+					case 'He/His':
 						mRole[g] = rr;
 						break;
 					case 'She/Her':
