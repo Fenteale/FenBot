@@ -57,7 +57,7 @@ client.on('ready', async () => {
 					case 'They/Them':
 						tRole[g] = rr;
 						break;
-					case 'He/His':
+					case 'He/Him':
 						mRole[g] = rr;
 						break;
 					case 'She/Her':
